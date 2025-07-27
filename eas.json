@@ -1,0 +1,55 @@
+{
+    "cli": {
+      "version": ">= 6.3.10",
+      "appVersionSource": "remote"
+    },
+    "build": {
+      "development": {
+        "developmentClient": true,
+        "distribution": "internal",
+        "channel": "development",
+        "android": {
+          "buildType": "apk"
+        },
+        "ios": {
+          "simulator": true
+        }
+      },
+      "preview": {
+        "distribution": "internal",
+        "channel": "preview",
+        "android": {
+          "buildType": "apk"
+        },
+        "ios": {
+          "enterpriseProvisioning": "universal"
+        }
+      },
+      "production": {
+        "autoIncrement": true,
+        "env": {
+          "APP_ENV": "production"
+        },
+        "channel": "production",
+        "distribution": "store",
+        "android": {
+          // "buildType": "apk",
+          // "gradleCommand": ":app:assembleRelease"
+          "buildType": "app-bundle",
+          "gradleCommand": ":app:bundleRelease"
+        },
+        "ios": {
+          "enterpriseProvisioning": "universal"
+        }
+      }
+    },
+    "submit": {
+      "production": {
+        "ios": {
+          "appleId": "your-apple-id@example.com",
+          "ascAppId": "YOUR_APP_STORE_CONNECT_APP_ID",
+          "appleTeamId": "YOUR_TEAM_ID"
+        }
+      }
+    }
+  }
