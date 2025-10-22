@@ -18,7 +18,7 @@
     "create:sdk": "npx create-react-native-library@latest ../turbo-module/MyModule",
     "lint": "expo lint",
     "update:sdk": "yarn upgrade react-native-appsdk",
-    "open:AndroidStudio": "open -a '/Applications/Android Studio' ./android",
+    "open:AndroidStudio": "open -a '/Applications/Android Studio.app' ./android",
     "edit:ios": "opeopen netawebthreeapp.xcworkspace",
     "edit:ios:module": "opeopen ./turbo-module/appsdk/ios/AppdkExample.xcworkspace",
     "check:expo:dep": "expo install --check",
