@@ -1,0 +1,85 @@
+{
+  "common": {
+    "loading": "加载中...",
+    "search_placeholder": "请输入商品 如：手机",
+    "save": "保存",
+    "cancel": "取消",
+    "tabs": {
+      "home": "首页",
+      "category": "分类",
+      "cart": "购物车",
+      "profile": "我的"
+    }
+  },
+  "home": {
+    "categories": {
+      "topic": "专题",
+      "talk": "话题",
+      "selected": "优选",
+      "discount": "特惠"
+    },
+    "sections": {
+      "brand_direct": "品牌制造商直供",
+      "brand_direct_subtitle": "工厂直达消费者，剔除品牌溢价",
+      "flash_sale": "秒杀专区",
+      "flash_sale_subtitle": "下一场开始",
+      "new_products": "新鲜好物",
+      "new_products_subtitle": "为你寻觅世间好物",
+      "hot_recommend": "人气推荐",
+      "hot_recommend_subtitle": "大家都赞不绝口的"
+    },
+    "product": {
+      "item_count": "商品数量：{{count}}",
+      "detail_title": "详情展示",
+      "sales": "销量",
+      "stock": "库存",
+      "comments": "评价",
+      "buy_type": "购买类型",
+      "select_specs": "请选择规格",
+      "params": "商品参数",
+      "view": "查看",
+      "coupons": "优惠券",
+      "get_coupons": "领取优惠券",
+      "service": "服务",
+      "service_content": "无忧退货 · 快速退款 · 免费包邮",
+      "graph_detail": "图文详情",
+      "no_detail": "暂无详情",
+      "add_to_cart": "加入购物车",
+      "buy_now": "立即购买"
+    }
+  },
+  "profile": {
+    "nickname_guest": "游客",
+    "vip_gold": "黄金会员",
+    "vip_open_now": "立即开通",
+    "vip_slogan": "mall移动端商城",
+    "vip_note": "黄金及以上会员可享有会员价优惠商品。",
+    "stats": {
+      "integration": "积分",
+      "growth": "成长值",
+      "coupon": "优惠券"
+    },
+    "orders": {
+      "title": "我的订单",
+      "all": "全部订单",
+      "unpaid": "待付款",
+      "undelivered": "待收货",
+      "refund": "退款/售后",
+      "see_all": "查看全部"
+    },
+    "menu": {
+      "address": "地址管理",
+      "history": "我的足迹",
+      "following": "我的关注",
+      "favorite": "我的收藏",
+      "comment": "我的评价",
+      "settings": "设置",
+      "language": "语言设置"
+    }
+  },
+  "settings": {
+    "language_title": "选择语言",
+    "zh": "简体中文",
+    "en": "English"
+  }
+}

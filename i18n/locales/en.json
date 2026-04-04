@@ -1,0 +1,85 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "search_placeholder": "Search products like: phone",
+    "save": "Save",
+    "cancel": "Cancel",
+    "tabs": {
+      "home": "Home",
+      "category": "Category",
+      "cart": "Cart",
+      "profile": "Profile"
+    }
+  },
+  "home": {
+    "categories": {
+      "topic": "Topic",
+      "talk": "Talk",
+      "selected": "Selected",
+      "discount": "Discount"
+    },
+    "sections": {
+      "brand_direct": "Brand Manufacturer Direct",
+      "brand_direct_subtitle": "Directly from the factory, eliminate brand premiums",
+      "flash_sale": "Flash Sale",
+      "flash_sale_subtitle": "Next starting soon",
+      "new_products": "New Arrivals",
+      "new_products_subtitle": "Finding the best products for you",
+      "hot_recommend": "Popular Recommendations",
+      "hot_recommend_subtitle": "Highly recommended by everyone"
+    },
+    "product": {
+      "item_count": "Items: {{count}}",
+      "detail_title": "Product Detail",
+      "sales": "Sales",
+      "stock": "Stock",
+      "comments": "Reviews",
+      "buy_type": "Purchase Type",
+      "select_specs": "Choose Specs",
+      "params": "Parameters",
+      "view": "View",
+      "coupons": "Coupons",
+      "get_coupons": "Claim Coupons",
+      "service": "Service",
+      "service_content": "Worry-free Return · Fast Refund · Free Shipping",
+      "graph_detail": "Graph Detail",
+      "no_detail": "No detail available",
+      "add_to_cart": "Add to Cart",
+      "buy_now": "Buy Now"
+    }
+  },
+  "profile": {
+    "nickname_guest": "Guest",
+    "vip_gold": "Gold Member",
+    "vip_open_now": "Join Now",
+    "vip_slogan": "mall Mobile Store",
+    "vip_note": "Gold members and above enjoy member-exclusive prices.",
+    "stats": {
+      "integration": "Points",
+      "growth": "Growth",
+      "coupon": "Coupons"
+    },
+    "orders": {
+      "title": "My Orders",
+      "all": "All",
+      "unpaid": "Unpaid",
+      "undelivered": "Pending",
+      "refund": "Refund/After-sale",
+      "see_all": "See All"
+    },
+    "menu": {
+      "address": "Address Management",
+      "history": "Browsing History",
+      "following": "My Following",
+      "favorite": "My Favorite",
+      "comment": "My Reviews",
+      "settings": "Settings",
+      "language": "Language"
+    }
+  },
+  "settings": {
+    "language_title": "Select Language",
+    "zh": "简体中文",
+    "en": "English"
+  }
+}

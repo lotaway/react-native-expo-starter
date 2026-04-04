@@ -1,4 +1,6 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -7,6 +9,7 @@ import {
   Image,
   TouchableOpacity,
   SafeAreaView,
+  Alert,
 } from 'react-native';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
@@ -19,19 +22,41 @@ interface MallUserAccount {
   couponCount: number;
 }
 
-const ORDER_STATUS_LINKS = [
-  { label: '全部订单', icon: 'list.bullet.rectangle' },
-  { label: '待付款', icon: 'creditcard' },
-  { label: '待收货', icon: 'shippingbox' },
-  { label: '退款/售后', icon: 'arrow.counterclockwise' },
-];
 
 export default function ProfileScreen() {
+  const { t, i18n } = useTranslation();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
 
+  const changeLanguage = () => {
+    Alert.alert(
+      t('settings.language_title'),
+      '',
+      [
+        {
+          text: t('settings.zh'),
+          onPress: async () => {
+            await i18n.changeLanguage('zh');
+            await AsyncStorage.setItem('user-language', 'zh');
+          },
+        },
+        {
+          text: t('settings.en'),
+          onPress: async () => {
+            await i18n.changeLanguage('en');
+            await AsyncStorage.setItem('user-language', 'en');
+          },
+        },
+        {
+          text: t('common.cancel'),
+          style: 'cancel',
+        },
+      ],
+    );
+  };
+
   const currentMallUser: MallUserAccount = {
-    nickname: '游客',
+    nickname: t('profile.nickname_guest'),
     integration: 0,
     growth: 0,
     couponCount: 0,
@@ -47,12 +72,13 @@ export default function ProfileScreen() {
         <OrderQuickLinksSection colors={colors} />
 
         <View style={styles.menuSection}>
-          <ProfileMenuCell icon="mappin.and.ellipse" title="地址管理" color="#5fcda2" />
-          <ProfileMenuCell icon="clock.fill" title="我的足迹" color="#e07472" />
-          <ProfileMenuCell icon="star.fill" title="我的关注" color="#5fcda2" />
-          <ProfileMenuCell icon="heart.fill" title="我的收藏" color="#54b4ef" />
-          <ProfileMenuCell icon="star.bubble.fill" title="我的评价" color="#ee883b" />
-          <ProfileMenuCell icon="gearshape.fill" title="设置" color="#e07472" showBorder={false} />
+          <ProfileMenuCell icon="mappin.and.ellipse" title={t('profile.menu.address')} color="#5fcda2" />
+          <ProfileMenuCell icon="clock.fill" title={t('profile.menu.history')} color="#e07472" />
+          <ProfileMenuCell icon="star.fill" title={t('profile.menu.following')} color="#5fcda2" />
+          <ProfileMenuCell icon="heart.fill" title={t('profile.menu.favorite')} color="#54b4ef" />
+          <ProfileMenuCell icon="star.bubble.fill" title={t('profile.menu.comment')} color="#ee883b" />
+          <ProfileMenuCell icon="globe" title={t('profile.menu.language')} color="#4a90e2" onPress={changeLanguage} />
+          <ProfileMenuCell icon="gearshape.fill" title={t('profile.menu.settings')} color="#e07472" showBorder={false} />
         </View>
 
         <View style={styles.bottomSpacer} />
@@ -62,6 +88,7 @@ export default function ProfileScreen() {
 }
 
 function ProfileHeader({ user, colors }: { user: MallUserAccount; colors: any }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.userSection}>
       <Image
@@ -79,45 +106,54 @@ function ProfileHeader({ user, colors }: { user: MallUserAccount; colors: any })
         <View style={styles.vipHeader}>
           <View style={styles.vipTitleLine}>
             <IconSymbol name="crown.fill" size={16} color="#f7d680" />
-            <Text style={styles.vipTitle}>黄金会员</Text>
+            <Text style={styles.vipTitle}>{t('profile.vip_gold')}</Text>
           </View>
           <TouchableOpacity style={styles.vipBtn}>
-            <Text style={styles.vipBtnText}>立即开通</Text>
+            <Text style={styles.vipBtnText}>{t('profile.vip_open_now')}</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.vipDesc}>mall移动端商城</Text>
-        <Text style={styles.vipFootnote}>黄金及以上会员可享有会员价优惠商品。</Text>
+        <Text style={styles.vipDesc}>{t('profile.vip_slogan')}</Text>
+        <Text style={styles.vipFootnote}>{t('profile.vip_note')}</Text>
       </View>
     </View>
   );
 }
 
 function UserStatsSection({ user, colors }: { user: MallUserAccount; colors: any }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.statsSection}>
       <View style={styles.statItem}>
         <Text style={[styles.statNum, { color: colors.fontColorDark }]}>{user.integration}</Text>
-        <Text style={[styles.statLabel, { color: colors.fontColorLight }]}>积分</Text>
+        <Text style={[styles.statLabel, { color: colors.fontColorLight }]}>{t('profile.stats.integration')}</Text>
       </View>
       <View style={styles.statItem}>
         <Text style={[styles.statNum, { color: colors.fontColorDark }]}>{user.growth}</Text>
-        <Text style={[styles.statLabel, { color: colors.fontColorLight }]}>成长值</Text>
+        <Text style={[styles.statLabel, { color: colors.fontColorLight }]}>{t('profile.stats.growth')}</Text>
       </View>
       <View style={styles.statItem}>
         <Text style={[styles.statNum, { color: colors.fontColorDark }]}>{user.couponCount}</Text>
-        <Text style={[styles.statLabel, { color: colors.fontColorLight }]}>优惠券</Text>
+        <Text style={[styles.statLabel, { color: colors.fontColorLight }]}>{t('profile.stats.coupon')}</Text>
       </View>
     </View>
   );
 }
 
 function OrderQuickLinksSection({ colors }: { colors: any }) {
+  const { t } = useTranslation();
+  const ORDER_STATUS_LINKS = [
+    { label: t('profile.orders.all'), icon: 'list.bullet.rectangle' },
+    { label: t('profile.orders.unpaid'), icon: 'creditcard' },
+    { label: t('profile.orders.undelivered'), icon: 'shippingbox' },
+    { label: t('profile.orders.refund'), icon: 'arrow.counterclockwise' },
+  ];
+
   return (
     <View style={styles.orderSection}>
       <View style={styles.orderHeader}>
-        <Text style={[styles.orderTitle, { color: colors.fontColorDark }]}>我的订单</Text>
+        <Text style={[styles.orderTitle, { color: colors.fontColorDark }]}>{t('profile.orders.title')}</Text>
         <TouchableOpacity style={styles.seeAll}>
-          <Text style={{ color: colors.fontColorLight }}>查看全部</Text>
+          <Text style={{ color: colors.fontColorLight }}>{t('profile.orders.see_all')}</Text>
           <IconSymbol name="chevron.right" size={12} color={colors.fontColorLight} />
         </TouchableOpacity>
       </View>
@@ -133,11 +169,11 @@ function OrderQuickLinksSection({ colors }: { colors: any }) {
   );
 }
 
-function ProfileMenuCell({ icon, title, color, showBorder = true }: any) {
+function ProfileMenuCell({ icon, title, color, onPress, showBorder = true }: any) {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   return (
-    <TouchableOpacity style={[styles.menuCell, showBorder && styles.bottomBorder]}>
+    <TouchableOpacity style={[styles.menuCell, showBorder && styles.bottomBorder]} onPress={onPress}>
       <View style={styles.menuLeft}>
         <IconSymbol name={icon} size={20} color={color} />
         <Text style={[styles.menuTitle, { color: colors.fontColorDark }]}>{title}</Text>

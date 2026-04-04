@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Platform } from 'react-native';
 
 import { HapticTab } from '../../components/HapticTab';
@@ -9,6 +10,7 @@ import { Colors } from '../../constants/Colors';
 import { useColorScheme } from '../../hooks/useColorScheme';
 
 export default function TabLayout() {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme();
 
   return (
@@ -29,28 +31,28 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: '首页',
+          title: t('common.tabs.home'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="category"
         options={{
-          title: '分类',
+          title: t('common.tabs.category'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="squareshape.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="cart"
         options={{
-          title: '购物车',
+          title: t('common.tabs.cart'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="cart.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: '我的',
+          title: t('common.tabs.profile'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
         }}
       />

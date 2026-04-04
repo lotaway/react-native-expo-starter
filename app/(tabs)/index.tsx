@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   View,
   Text,
@@ -18,13 +19,14 @@ import { fetchMallHomeContent, MallHomeContent } from '@/api/home';
 const { width: WINDOW_WIDTH } = Dimensions.get('window');
 
 const CATE_ITEMS = [
-  { name: '专题', icon: 'star.fill' },
-  { name: '话题', icon: 'bubble.left.fill' },
-  { name: '优选', icon: 'checkmark.seal.fill' },
-  { name: '特惠', icon: 'tag.fill' },
+  { nameKey: 'home.categories.topic', icon: 'star.fill' },
+  { nameKey: 'home.categories.talk', icon: 'bubble.left.fill' },
+  { nameKey: 'home.categories.selected', icon: 'checkmark.seal.fill' },
+  { nameKey: 'home.categories.discount', icon: 'tag.fill' },
 ];
 
 export default function HomeScreen() {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   
@@ -52,7 +54,7 @@ export default function HomeScreen() {
   if (!isDataLoaded) {
     return (
       <View style={[styles.container, styles.center]}>
-        <Text>Loading...</Text>
+        <Text>{t('common.loading')}</Text>
       </View>
     );
   }
@@ -75,16 +77,16 @@ export default function HomeScreen() {
         )}
 
         <ProductGridSection 
-          title="新鲜好物" 
-          subtitle="为你寻觅世间好物" 
+          title={t('home.sections.new_products')} 
+          subtitle={t('home.sections.new_products_subtitle')} 
           productList={mallHomeData?.newProductList || []} 
           colors={colors} 
           onProductPress={navigateToProductDetail} 
         />
 
         <ProductGridSection 
-          title="人气推荐" 
-          subtitle="大家都赞不绝口的" 
+          title={t('home.sections.hot_recommend')} 
+          subtitle={t('home.sections.hot_recommend_subtitle')} 
           productList={mallHomeData?.hotProductList || []} 
           colors={colors} 
           onProductPress={navigateToProductDetail} 
@@ -97,12 +99,13 @@ export default function HomeScreen() {
 }
 
 function HomeHeader({ colors }: { colors: any }) {
+  const { t } = useTranslation();
   return (
     <View style={[styles.header, { backgroundColor: colors.background }]}>
       <TouchableOpacity style={styles.searchBox}>
         <IconSymbol name="magnifyingglass" size={20} color={colors.fontColorLight} />
         <Text style={[styles.searchText, { color: colors.fontColorLight }]}>
-          请输入商品 如：手机
+          {t('common.search_placeholder')}
         </Text>
       </TouchableOpacity>
       <View style={styles.headerIcons}>
@@ -135,6 +138,7 @@ function BannerSection({ advertiseList }: { advertiseList: any[] }) {
 }
 
 function CategorySection({ colors }: { colors: any }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.cateSection}>
       {CATE_ITEMS.map((item, index) => (
@@ -142,7 +146,7 @@ function CategorySection({ colors }: { colors: any }) {
           <View style={[styles.cateIconBox, { backgroundColor: colors.primary + '20' }]}>
             <IconSymbol name={item.icon as any} size={32} color={colors.primary} />
           </View>
-          <Text style={[styles.cateName, { color: colors.fontColorDark }]}>{item.name}</Text>
+          <Text style={[styles.cateName, { color: colors.fontColorDark }]}>{t(item.nameKey)}</Text>
         </TouchableOpacity>
       ))}
     </View>
@@ -150,16 +154,17 @@ function CategorySection({ colors }: { colors: any }) {
 }
 
 function BrandSection({ brandList, colors }: { brandList: any[]; colors: any }) {
+  const { t } = useTranslation();
   return (
     <>
-      <SectionHeader title="品牌制造商直供" subtitle="工厂直达消费者，剔除品牌溢价" />
+      <SectionHeader title={t('home.sections.brand_direct')} subtitle={t('home.sections.brand_direct_subtitle')} />
       <View style={styles.brandGrid}>
         {brandList.slice(0, 4).map((item, index) => (
           <TouchableOpacity key={index} style={styles.brandItem}>
             <Image source={{ uri: item.logo }} style={styles.brandLogo} resizeMode="contain" />
             <Text style={[styles.brandName, { color: colors.fontColorDark }]}>{item.name}</Text>
             <Text style={[styles.brandCount, { color: colors.fontColorLight }]}>
-              商品数量：{item.productCount}
+              {t('home.product.item_count', { count: item.productCount })}
             </Text>
           </TouchableOpacity>
         ))}
@@ -169,9 +174,10 @@ function BrandSection({ brandList, colors }: { brandList: any[]; colors: any }) 
 }
 
 function FlashSection({ promotion, colors, onProductPress }: { promotion: any; colors: any; onProductPress: (id: number) => void }) {
+  const { t } = useTranslation();
   return (
     <>
-      <SectionHeader title="秒杀专区" subtitle="下一场开始" />
+      <SectionHeader title={t('home.sections.flash_sale')} subtitle={t('home.sections.flash_sale_subtitle')} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.flashScroll}>
         {promotion.productList.map((item: any, index: number) => (
           <TouchableOpacity key={index} style={styles.flashItem} onPress={() => onProductPress(item.id)}>

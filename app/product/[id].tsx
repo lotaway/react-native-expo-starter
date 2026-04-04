@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   View,
   Text,
@@ -33,6 +34,7 @@ interface MallProduct {
 }
 
 export default function ProductDetailScreen() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
@@ -67,14 +69,14 @@ export default function ProductDetailScreen() {
   if (isPageLoading || !productDetails) {
     return (
       <View style={[styles.container, styles.center]}>
-        <Text>Loading...</Text>
+        <Text>{t('common.loading')}</Text>
       </View>
     );
   }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <Stack.Screen options={{ title: '详情展示', headerTransparent: true, headerTitle: '' }} />
+      <Stack.Screen options={{ title: t('home.product.detail_title'), headerTransparent: true, headerTitle: '' }} />
       
       <ScrollView showsVerticalScrollIndicator={false}>
         <ScrollView
@@ -97,35 +99,35 @@ export default function ProductDetailScreen() {
             <Text style={[styles.originalPrice, { color: colors.fontColorLight }]}>¥{productDetails.originalPrice}</Text>
           </View>
           <View style={styles.statsBar}>
-            <Text style={[styles.statsText, { color: colors.fontColorLight }]}>销量: {productDetails.sale}</Text>
-            <Text style={[styles.statsText, { color: colors.fontColorLight }]}>库存: {productDetails.stock}</Text>
-            <Text style={[styles.statsText, { color: colors.fontColorLight }]}>评价: 86</Text>
+            <Text style={[styles.statsText, { color: colors.fontColorLight }]}>{t('home.product.sales')}: {productDetails.sale}</Text>
+            <Text style={[styles.statsText, { color: colors.fontColorLight }]}>{t('home.product.stock')}: {productDetails.stock}</Text>
+            <Text style={[styles.statsText, { color: colors.fontColorLight }]}>{t('home.product.comments')}: 86</Text>
           </View>
         </View>
 
         <View style={styles.cList}>
-          <ProductInfoRow title="购买类型" content="请选择规格" showArrow colors={colors} />
-          <ProductInfoRow title="商品参数" content="查看" showArrow colors={colors} />
+          <ProductInfoRow title={t('home.product.buy_type')} content={t('home.product.select_specs')} showArrow colors={colors} />
+          <ProductInfoRow title={t('home.product.params')} content={t('home.product.view')} showArrow colors={colors} />
           <ProductInfoRow 
-            title="优惠券" 
-            content="领取优惠券" 
+            title={t('home.product.coupons')} 
+            content={t('home.product.get_coupons')} 
             showArrow 
             colors={colors} 
             contentStyle={{ color: colors.primary }} 
           />
-          <ProductInfoRow title="服务" content="无忧退货 · 快速退款 · 免费包邮" colors={colors} />
+          <ProductInfoRow title={t('home.product.service')} content={t('home.product.service_content')} colors={colors} />
         </View>
 
         <View style={styles.detailDesc}>
           <View style={styles.detailHeader}>
             <View style={styles.headerLine} />
-            <Text style={[styles.headerText, { color: colors.fontColorDark }]}>图文详情</Text>
+            <Text style={[styles.headerText, { color: colors.fontColorDark }]}>{t('home.product.graph_detail')}</Text>
             <View style={styles.headerLine} />
           </View>
           <View style={styles.htmlWrapper}>
              <RenderHTML
               contentWidth={contentWidth - 20}
-              source={{ html: productDetails.detailMobileHtml || '<p>暂无详情</p>' }}
+              source={{ html: productDetails.detailMobileHtml || `<p>${t('home.product.no_detail')}</p>` }}
               tagsStyles={{
                 img: { width: '100%', height: 'auto' },
                 p: { color: colors.fontColorDark },
@@ -155,28 +157,29 @@ function ProductInfoRow({ title, content, showArrow, colors, contentStyle }: any
 }
 
 function ProductInteractionBar({ colors }: { colors: any }) {
+  const { t } = useTranslation();
   return (
     <View style={[styles.bottomBar, { backgroundColor: colors.background }]}>
       <View style={styles.bottomLeft}>
         <TouchableOpacity onPress={() => router.replace('/(tabs)')} style={styles.bottomIconBtn}>
           <IconSymbol name="house" size={24} color={colors.fontColorBase} />
-          <Text style={[styles.bottomIconText, { color: colors.fontColorBase }]}>首页</Text>
+          <Text style={[styles.bottomIconText, { color: colors.fontColorBase }]}>{t('common.tabs.home')}</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => router.replace('/(tabs)/cart')} style={styles.bottomIconBtn}>
           <IconSymbol name="cart" size={24} color={colors.fontColorBase} />
-          <Text style={[styles.bottomIconText, { color: colors.fontColorBase }]}>购物车</Text>
+          <Text style={[styles.bottomIconText, { color: colors.fontColorBase }]}>{t('common.tabs.cart')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomIconBtn}>
           <IconSymbol name="heart" size={24} color={colors.fontColorBase} />
-          <Text style={[styles.bottomIconText, { color: colors.fontColorBase }]}>收藏</Text>
+          <Text style={[styles.bottomIconText, { color: colors.fontColorBase }]}>{t('profile.menu.favorite')}</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.bottomRight}>
         <TouchableOpacity style={[styles.actionBtn, styles.cartBtn]}>
-          <Text style={styles.actionBtnText}>加入购物车</Text>
+          <Text style={styles.actionBtnText}>{t('home.product.add_to_cart')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.actionBtn, styles.buyBtn, { backgroundColor: colors.primary }]}>
-          <Text style={styles.actionBtnText}>立即购买</Text>
+          <Text style={styles.actionBtnText}>{t('home.product.buy_now')}</Text>
         </TouchableOpacity>
       </View>
     </View>
