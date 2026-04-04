@@ -20,8 +20,8 @@ reject:(RCTPromiseRejectBlock)reject {
   resolve(result);
 }
 
-- (void)startFaceDetection:(RCTResponseSenderBlock)callback) {
-  dispatch_queue_t backgroundQueue = dispatch_get_global_queue()
+- (void)startFaceDetection:(RCTResponseSenderBlock)callback {
+  dispatch_queue_t backgroundQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
 }
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
