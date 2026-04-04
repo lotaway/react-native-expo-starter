@@ -1,6 +1,8 @@
 {
   "common": {
     "loading": "Loading...",
+    "load_failed": "Load failed",
+    "retry": "Retry",
     "search_placeholder": "Search products like: phone",
     "save": "Save",
     "cancel": "Cancel",

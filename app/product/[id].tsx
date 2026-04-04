@@ -1,72 +1,82 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Image,
-  TouchableOpacity,
   Dimensions,
   SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Image,
   useWindowDimensions,
+  TextStyle,
 } from 'react-native';
-import { useLocalSearchParams, router, Stack } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
+import RenderHTML from 'react-native-render-html';
+import { fetchProductDetail } from '@/api/product';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { fetchProductDetail } from '@/api/product';
-import RenderHTML from 'react-native-render-html';
+import { MallProduct } from '@/types/mall';
 
-const { width: PAGE_WIDTH } = Dimensions.get('window');
+const { width: pageWidth } = Dimensions.get('window');
+const reviewCount = 86;
 
-interface MallProduct {
-  id: number;
-  name: string;
-  subTitle: string;
-  pic: string;
-  albumPics: string;
-  price: number;
-  originalPrice: number;
-  sale: number;
-  stock: number;
-  detailMobileHtml: string;
-}
+type ProductInfoRowProps = {
+  title: string;
+  content: string;
+  showArrow?: boolean;
+  colors: typeof Colors.light;
+  contentStyle?: TextStyle;
+};
+
+type ProductInteractionBarProps = {
+  colors: typeof Colors.light;
+};
 
 export default function ProductDetailScreen() {
   const { t } = useTranslation();
-  const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams<{ id?: string }>();
   const colorScheme = useColorScheme() ?? 'light';
-  const colors = Colors[colorScheme];
+  const colors = Colors[colorScheme] as typeof Colors.light;
   const { width: contentWidth } = useWindowDimensions();
 
-  const [productDetails, setProductDetails] = useState<MallProduct | null>(null);
-  const [isPageLoading, setIsPageLoading] = useState(true);
+  const [productDetail, setProductDetail] = useState<MallProduct | null>(null);
+  const [isProductDetailLoading, setIsProductDetailLoading] = useState(true);
+  const [productDetailLoadError, setProductDetailLoadError] = useState<Error | null>(null);
 
-  const productImages = useMemo(() => {
-    if (!productDetails) return [];
-    const albumPics = productDetails.albumPics ? productDetails.albumPics.split(',') : [];
-    return [productDetails.pic, ...albumPics].filter(url => url);
-  }, [productDetails]);
+  const productImageList = useMemo(() => {
+    if (!productDetail) {
+      return [];
+    }
+    const albumImageList = productDetail.albumPics ? productDetail.albumPics.split(',') : [];
+    return [productDetail.pic, ...albumImageList].filter((imageUrl) => Boolean(imageUrl));
+  }, [productDetail]);
 
-  const loadProductInfo = useCallback(async (productId: number) => {
+  const loadProductDetail = useCallback(async (productId: number) => {
+    setIsProductDetailLoading(true);
+    setProductDetailLoadError(null);
     try {
       const response = await fetchProductDetail(productId);
-      setProductDetails(response.data.product);
-    } catch {
-      // Error handled by interceptor
+      setProductDetail(response.data.product);
+    } catch (error) {
+      setProductDetailLoadError(error as Error);
     } finally {
-      setIsPageLoading(false);
+      setIsProductDetailLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    if (id) {
-      loadProductInfo(Number(id));
+    const productId = Number(id ?? 0);
+    if (!productId) {
+      setIsProductDetailLoading(false);
+      return;
     }
-  }, [id, loadProductInfo]);
+    loadProductDetail(productId);
+  }, [id, loadProductDetail]);
 
-  if (isPageLoading || !productDetails) {
+  if (isProductDetailLoading) {
     return (
       <View style={[styles.container, styles.center]}>
         <Text>{t('common.loading')}</Text>
@@ -74,64 +84,82 @@ export default function ProductDetailScreen() {
     );
   }
 
+  if (productDetailLoadError || !productDetail) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <Text style={{ color: colors.error }}>{t('common.load_failed')}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={() => loadProductDetail(Number(id ?? 0))}>
+          <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
       <Stack.Screen options={{ title: t('home.product.detail_title'), headerTransparent: true, headerTitle: '' }} />
-      
+
       <ScrollView showsVerticalScrollIndicator={false}>
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          style={styles.bannerContainer}
-        >
-          {productImages.map((uri, index) => (
-            <Image key={index} source={{ uri }} style={styles.bannerImage} />
+        <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={styles.bannerContainer}>
+          {productImageList.map((imageUrl) => (
+            <Image key={imageUrl} source={{ uri: imageUrl }} style={styles.bannerImage} />
           ))}
         </ScrollView>
 
         <View style={styles.introSection}>
-          <Text style={[styles.title, { color: colors.fontColorDark }]}>{productDetails.name}</Text>
-          <Text style={[styles.subtitle, { color: colors.fontColorLight }]}>{productDetails.subTitle}</Text>
+          <Text style={[styles.title, { color: colors.fontColorDark }]}>{productDetail.name}</Text>
+          <Text style={[styles.subtitle, { color: colors.fontColorLight }]}>{productDetail.subTitle}</Text>
           <View style={styles.priceRow}>
             <Text style={[styles.priceTag, { color: colors.primary }]}>¥</Text>
-            <Text style={[styles.priceValue, { color: colors.primary }]}>{productDetails.price}</Text>
-            <Text style={[styles.originalPrice, { color: colors.fontColorLight }]}>¥{productDetails.originalPrice}</Text>
+            <Text style={[styles.priceValue, { color: colors.primary }]}>{productDetail.price}</Text>
+            <Text style={[styles.originalPrice, { color: colors.fontColorLight }]}>¥{productDetail.originalPrice}</Text>
           </View>
           <View style={styles.statsBar}>
-            <Text style={[styles.statsText, { color: colors.fontColorLight }]}>{t('home.product.sales')}: {productDetails.sale}</Text>
-            <Text style={[styles.statsText, { color: colors.fontColorLight }]}>{t('home.product.stock')}: {productDetails.stock}</Text>
-            <Text style={[styles.statsText, { color: colors.fontColorLight }]}>{t('home.product.comments')}: 86</Text>
+            <Text style={[styles.statsText, { color: colors.fontColorLight }]}>
+              {t('home.product.sales')}: {productDetail.sale}
+            </Text>
+            <Text style={[styles.statsText, { color: colors.fontColorLight }]}>
+              {t('home.product.stock')}: {productDetail.stock}
+            </Text>
+            <Text style={[styles.statsText, { color: colors.fontColorLight }]}>
+              {t('home.product.comments')}: {reviewCount}
+            </Text>
           </View>
         </View>
 
-        <View style={styles.cList}>
-          <ProductInfoRow title={t('home.product.buy_type')} content={t('home.product.select_specs')} showArrow colors={colors} />
-          <ProductInfoRow title={t('home.product.params')} content={t('home.product.view')} showArrow colors={colors} />
-          <ProductInfoRow 
-            title={t('home.product.coupons')} 
-            content={t('home.product.get_coupons')} 
-            showArrow 
-            colors={colors} 
-            contentStyle={{ color: colors.primary }} 
+        <View style={styles.infoList}>
+          <ProductInfoRow
+            title={t('home.product.buy_type')}
+            content={t('home.product.select_specs')}
+            showArrow
+            colors={colors}
           />
-          <ProductInfoRow title={t('home.product.service')} content={t('home.product.service_content')} colors={colors} />
+          <ProductInfoRow title={t('home.product.params')} content={t('home.product.view')} showArrow colors={colors} />
+          <ProductInfoRow
+            title={t('home.product.coupons')}
+            content={t('home.product.get_coupons')}
+            showArrow
+            colors={colors}
+            contentStyle={{ color: colors.primary }}
+          />
+          <ProductInfoRow
+            title={t('home.product.service')}
+            content={t('home.product.service_content')}
+            colors={colors}
+          />
         </View>
 
-        <View style={styles.detailDesc}>
+        <View style={styles.detailSection}>
           <View style={styles.detailHeader}>
             <View style={styles.headerLine} />
             <Text style={[styles.headerText, { color: colors.fontColorDark }]}>{t('home.product.graph_detail')}</Text>
             <View style={styles.headerLine} />
           </View>
           <View style={styles.htmlWrapper}>
-             <RenderHTML
+            <RenderHTML
               contentWidth={contentWidth - 20}
-              source={{ html: productDetails.detailMobileHtml || `<p>${t('home.product.no_detail')}</p>` }}
-              tagsStyles={{
-                img: { width: '100%', height: 'auto' },
-                p: { color: colors.fontColorDark },
-              }}
+              source={{ html: productDetail.detailMobileHtml || `<p>${t('home.product.no_detail')}</p>` }}
+              tagsStyles={{ img: { width: '100%', height: 'auto' }, p: { color: colors.fontColorDark } }}
             />
           </View>
         </View>
@@ -144,7 +172,7 @@ export default function ProductDetailScreen() {
   );
 }
 
-function ProductInfoRow({ title, content, showArrow, colors, contentStyle }: any) {
+function ProductInfoRow({ title, content, showArrow, colors, contentStyle }: ProductInfoRowProps) {
   return (
     <TouchableOpacity style={styles.infoRow}>
       <Text style={[styles.rowTitle, { color: colors.fontColorLight }]}>{title}</Text>
@@ -156,10 +184,11 @@ function ProductInfoRow({ title, content, showArrow, colors, contentStyle }: any
   );
 }
 
-function ProductInteractionBar({ colors }: { colors: any }) {
+function ProductInteractionBar({ colors }: ProductInteractionBarProps) {
   const { t } = useTranslation();
+
   return (
-    <View style={[styles.bottomBar, { backgroundColor: colors.background }]}>
+    <View style={[styles.bottomBar, { backgroundColor: colors.background }]}> 
       <View style={styles.bottomLeft}>
         <TouchableOpacity onPress={() => router.replace('/(tabs)')} style={styles.bottomIconBtn}>
           <IconSymbol name="house" size={24} color={colors.fontColorBase} />
@@ -194,12 +223,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  retryButton: {
+    marginTop: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: '#fa436a',
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
   bannerContainer: {
-    height: PAGE_WIDTH,
+    height: pageWidth,
   },
   bannerImage: {
-    width: PAGE_WIDTH,
-    height: PAGE_WIDTH,
+    width: pageWidth,
+    height: pageWidth,
     resizeMode: 'cover',
   },
   introSection: {
@@ -244,7 +284,7 @@ const styles = StyleSheet.create({
   statsText: {
     fontSize: 12,
   },
-  cList: {
+  infoList: {
     backgroundColor: '#fff',
     marginTop: 15,
     paddingHorizontal: 20,
@@ -264,7 +304,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
   },
-  detailDesc: {
+  detailSection: {
     backgroundColor: '#fff',
     marginTop: 15,
     paddingBottom: 20,

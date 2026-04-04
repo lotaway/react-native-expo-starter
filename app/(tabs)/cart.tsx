@@ -22,9 +22,24 @@ interface ShoppingCartItem {
   spDataStr: string;
 }
 
+type CartItemRowProps = {
+  item: ShoppingCartItem;
+  colors: typeof Colors.light;
+  onToggleCheck: (itemId: number) => void;
+  onUpdateQuantity: (itemId: number, delta: number) => void;
+  onRemove: (itemId: number) => void;
+};
+
+type CartActionBarProps = {
+  selectedTotal: string;
+  isAllSelected: boolean;
+  colors: typeof Colors.light;
+  onToggleAll: () => void;
+};
+
 export default function CartScreen() {
   const colorScheme = useColorScheme() ?? 'light';
-  const colors = Colors[colorScheme];
+  const colors = Colors[colorScheme] as typeof Colors.light;
   
   const [shoppingCartItems, setShoppingCartItems] = useState<ShoppingCartItem[]>([
     {
@@ -47,31 +62,36 @@ export default function CartScreen() {
     },
   ]);
 
-  const toggleItemCheck = (index: number) => {
-    const updatedItems = [...shoppingCartItems];
-    updatedItems[index].checked = !updatedItems[index].checked;
-    setShoppingCartItems(updatedItems);
+  const toggleItemCheck = (itemId: number) => {
+    setShoppingCartItems((currentItems) =>
+      currentItems.map((item) => (item.id === itemId ? { ...item, checked: !item.checked } : item)),
+    );
   };
 
   const toggleAllSelection = () => {
     const isAllCurrentlySelected = shoppingCartItems.every((item) => item.checked);
-    const updatedItems = shoppingCartItems.map((item) => ({ ...item, checked: !isAllCurrentlySelected }));
-    setShoppingCartItems(updatedItems);
+    setShoppingCartItems((currentItems) =>
+      currentItems.map((item) => ({ ...item, checked: !isAllCurrentlySelected })),
+    );
   };
 
-  const updateItemQuantity = (index: number, delta: number) => {
-    const updatedItems = [...shoppingCartItems];
-    const newQuantity = updatedItems[index].quantity + delta;
-    if (newQuantity >= 1) {
-      updatedItems[index].quantity = newQuantity;
-      setShoppingCartItems(updatedItems);
-    }
+  const updateItemQuantity = (itemId: number, delta: number) => {
+    setShoppingCartItems((currentItems) =>
+      currentItems.map((item) => {
+        if (item.id !== itemId) {
+          return item;
+        }
+        const updatedQuantity = item.quantity + delta;
+        if (updatedQuantity < 1) {
+          return item;
+        }
+        return { ...item, quantity: updatedQuantity };
+      }),
+    );
   };
 
-  const removeShoppingCartItem = (index: number) => {
-    const updatedItems = [...shoppingCartItems];
-    updatedItems.splice(index, 1);
-    setShoppingCartItems(updatedItems);
+  const removeShoppingCartItem = (itemId: number) => {
+    setShoppingCartItems((currentItems) => currentItems.filter((item) => item.id !== itemId));
   };
 
   const selectedTotalPrice = useMemo(() => {
@@ -98,11 +118,10 @@ export default function CartScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView style={styles.cartList} showsVerticalScrollIndicator={false}>
-        {shoppingCartItems.map((item, index) => (
+        {shoppingCartItems.map((item) => (
           <CartItemRow 
             key={item.id} 
             item={item} 
-            index={index} 
             colors={colors} 
             onToggleCheck={toggleItemCheck} 
             onUpdateQuantity={updateItemQuantity} 
@@ -122,10 +141,10 @@ export default function CartScreen() {
   );
 }
 
-function CartItemRow({ item, index, colors, onToggleCheck, onUpdateQuantity, onRemove }: any) {
+function CartItemRow({ item, colors, onToggleCheck, onUpdateQuantity, onRemove }: CartItemRowProps) {
   return (
     <View style={styles.cartItem}>
-      <TouchableOpacity onPress={() => onToggleCheck(index)} style={styles.checkbox}>
+      <TouchableOpacity onPress={() => onToggleCheck(item.id)} style={styles.checkbox}>
         <IconSymbol
           name={item.checked ? 'checkmark.circle.fill' : 'circle'}
           size={24}
@@ -141,24 +160,24 @@ function CartItemRow({ item, index, colors, onToggleCheck, onUpdateQuantity, onR
         <View style={styles.priceRow}>
           <Text style={[styles.price, { color: colors.primary }]}>¥{item.price}</Text>
           <View style={styles.stepBox}>
-            <TouchableOpacity onPress={() => onUpdateQuantity(index, -1)} style={styles.stepBtn}>
+            <TouchableOpacity onPress={() => onUpdateQuantity(item.id, -1)} style={styles.stepBtn}>
               <Text style={styles.stepText}>-</Text>
             </TouchableOpacity>
             <Text style={styles.stepVal}>{item.quantity}</Text>
-            <TouchableOpacity onPress={() => onUpdateQuantity(index, 1)} style={styles.stepBtn}>
+            <TouchableOpacity onPress={() => onUpdateQuantity(item.id, 1)} style={styles.stepBtn}>
               <Text style={styles.stepText}>+</Text>
             </TouchableOpacity>
           </View>
         </View>
       </View>
-      <TouchableOpacity onPress={() => onRemove(index)} style={styles.delBtn}>
+      <TouchableOpacity onPress={() => onRemove(item.id)} style={styles.delBtn}>
         <IconSymbol name="xmark" size={16} color={colors.fontColorLight} />
       </TouchableOpacity>
     </View>
   );
 }
 
-function CartActionBar({ selectedTotal, isAllSelected, colors, onToggleAll }: any) {
+function CartActionBar({ selectedTotal, isAllSelected, colors, onToggleAll }: CartActionBarProps) {
   return (
     <View style={styles.actionSection}>
       <TouchableOpacity onPress={onToggleAll} style={styles.allCheck}>

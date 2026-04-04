@@ -1,6 +1,8 @@
 {
   "common": {
     "loading": "加载中...",
+    "load_failed": "加载失败",
+    "retry": "重试",
     "search_placeholder": "请输入商品 如：手机",
     "save": "保存",
     "cancel": "取消",

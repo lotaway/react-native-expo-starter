@@ -1,9 +1,17 @@
 import client from './client';
+import { MallProductDetailPayload, MallProductSummary } from '@/types/mall';
 
 export function fetchProductDetail(id: number) {
-  return client.get(`/product/detail/${id}`);
+  return client.get<MallProductDetailPayload>(`/product/detail/${id}`);
 }
 
-export function fetchProductList(params: any) {
-  return client.get('/product/queryProductList', { params });
+export interface ProductListQuery {
+  pageNum: number;
+  pageSize: number;
+  keyword?: string;
+  productCategoryId?: number;
+}
+
+export function fetchProductList(params: ProductListQuery) {
+  return client.get<MallProductSummary[]>('/product/queryProductList', { params });
 }

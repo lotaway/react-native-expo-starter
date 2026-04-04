@@ -1,4 +1,5 @@
 import React from 'react';
+import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
@@ -22,11 +23,19 @@ interface MallUserAccount {
   couponCount: number;
 }
 
+type ProfileMenuCellProps = {
+  icon: ComponentProps<typeof IconSymbol>['name'];
+  title: string;
+  color: string;
+  onPress?: () => void;
+  showBorder?: boolean;
+};
+
 
 export default function ProfileScreen() {
   const { t, i18n } = useTranslation();
   const colorScheme = useColorScheme() ?? 'light';
-  const colors = Colors[colorScheme];
+  const colors = Colors[colorScheme] as typeof Colors.light;
 
   const changeLanguage = () => {
     Alert.alert(
@@ -65,7 +74,7 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <ProfileHeader user={currentMallUser} colors={colors} />
+        <ProfileHeader user={currentMallUser} />
         
         <UserStatsSection user={currentMallUser} colors={colors} />
 
@@ -87,7 +96,7 @@ export default function ProfileScreen() {
   );
 }
 
-function ProfileHeader({ user, colors }: { user: MallUserAccount; colors: any }) {
+function ProfileHeader({ user }: { user: MallUserAccount }) {
   const { t } = useTranslation();
   return (
     <View style={styles.userSection}>
@@ -119,7 +128,7 @@ function ProfileHeader({ user, colors }: { user: MallUserAccount; colors: any })
   );
 }
 
-function UserStatsSection({ user, colors }: { user: MallUserAccount; colors: any }) {
+function UserStatsSection({ user, colors }: { user: MallUserAccount; colors: typeof Colors.light }) {
   const { t } = useTranslation();
   return (
     <View style={styles.statsSection}>
@@ -139,13 +148,14 @@ function UserStatsSection({ user, colors }: { user: MallUserAccount; colors: any
   );
 }
 
-function OrderQuickLinksSection({ colors }: { colors: any }) {
+function OrderQuickLinksSection({ colors }: { colors: typeof Colors.light }) {
   const { t } = useTranslation();
+  type MallOrderLinkIconName = ComponentProps<typeof IconSymbol>['name'];
   const ORDER_STATUS_LINKS = [
-    { label: t('profile.orders.all'), icon: 'list.bullet.rectangle' },
-    { label: t('profile.orders.unpaid'), icon: 'creditcard' },
-    { label: t('profile.orders.undelivered'), icon: 'shippingbox' },
-    { label: t('profile.orders.refund'), icon: 'arrow.counterclockwise' },
+    { label: t('profile.orders.all'), icon: 'list.bullet.rectangle' as MallOrderLinkIconName },
+    { label: t('profile.orders.unpaid'), icon: 'creditcard' as MallOrderLinkIconName },
+    { label: t('profile.orders.undelivered'), icon: 'shippingbox' as MallOrderLinkIconName },
+    { label: t('profile.orders.refund'), icon: 'arrow.counterclockwise' as MallOrderLinkIconName },
   ];
 
   return (
@@ -160,7 +170,7 @@ function OrderQuickLinksSection({ colors }: { colors: any }) {
       <View style={styles.orderGrid}>
         {ORDER_STATUS_LINKS.map((item, index) => (
           <TouchableOpacity key={index} style={styles.orderItem}>
-            <IconSymbol name={item.icon as any} size={28} color={colors.primary} />
+            <IconSymbol name={item.icon} size={28} color={colors.primary} />
             <Text style={[styles.orderLabel, { color: colors.fontColorDark }]}>{item.label}</Text>
           </TouchableOpacity>
         ))}
@@ -169,9 +179,9 @@ function OrderQuickLinksSection({ colors }: { colors: any }) {
   );
 }
 
-function ProfileMenuCell({ icon, title, color, onPress, showBorder = true }: any) {
+function ProfileMenuCell({ icon, title, color, onPress, showBorder = true }: ProfileMenuCellProps) {
   const colorScheme = useColorScheme() ?? 'light';
-  const colors = Colors[colorScheme];
+  const colors = Colors[colorScheme] as typeof Colors.light;
   return (
     <TouchableOpacity style={[styles.menuCell, showBorder && styles.bottomBorder]} onPress={onPress}>
       <View style={styles.menuLeft}>

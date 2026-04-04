@@ -1,119 +1,135 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
   Image,
-  TouchableOpacity,
   SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
+import { fetchProductCategoryList } from '@/api/home';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { fetchProductCategoryList } from '@/api/home';
+import { MallProductCategory } from '@/types/mall';
 
-interface ProductCategory {
-  id: number;
-  name: string;
-  icon?: string;
-  parentId: number;
-}
-
-const ROOT_CATEGORY_ID = 0;
+const rootCategoryId = 0;
 
 export default function CategoryScreen() {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? 'light';
-  const colors = Colors[colorScheme];
-  
-  const [primaryCategories, setPrimaryCategories] = useState<ProductCategory[]>([]);
-  const [secondaryCategories, setSecondaryCategories] = useState<ProductCategory[]>([]);
-  const [selectedMainCategoryId, setSelectedMainCategoryId] = useState<number | null>(null);
+  const colors = Colors[colorScheme] as typeof Colors.light;
 
-  const fetchSecondaryCategories = useCallback(async (parentId: number) => {
-    try {
-      const response = await fetchProductCategoryList(parentId);
-      setSecondaryCategories(response.data);
-    } catch {
-      // Error handled by interceptor
-    }
+  const [parentCategoryList, setParentCategoryList] = useState<MallProductCategory[]>([]);
+  const [childCategoryList, setChildCategoryList] = useState<MallProductCategory[]>([]);
+  const [selectedParentCategoryId, setSelectedParentCategoryId] = useState<number | null>(null);
+  const [isCategoryLoading, setIsCategoryLoading] = useState(true);
+  const [categoryLoadError, setCategoryLoadError] = useState<Error | null>(null);
+
+  const loadChildCategories = useCallback(async (parentCategoryId: number) => {
+    const response = await fetchProductCategoryList(parentCategoryId);
+    setChildCategoryList(response.data);
   }, []);
 
-  const initializeCategoryData = useCallback(async () => {
+  const loadCategories = useCallback(async () => {
+    setIsCategoryLoading(true);
+    setCategoryLoadError(null);
     try {
-      const response = await fetchProductCategoryList(ROOT_CATEGORY_ID);
-      const categories = response.data;
-      setPrimaryCategories(categories);
-      
-      if (categories.length > 0) {
-        const firstCategoryId = categories[0].id;
-        setSelectedMainCategoryId(firstCategoryId);
-        fetchSecondaryCategories(firstCategoryId);
+      const response = await fetchProductCategoryList(rootCategoryId);
+      setParentCategoryList(response.data);
+      if (response.data.length === 0) {
+        setSelectedParentCategoryId(null);
+        setChildCategoryList([]);
+        return;
       }
-    } catch {
-      // Error handled by interceptor
+      const firstParentCategoryId = response.data[0].id;
+      setSelectedParentCategoryId(firstParentCategoryId);
+      await loadChildCategories(firstParentCategoryId);
+    } catch (error) {
+      setCategoryLoadError(error as Error);
+    } finally {
+      setIsCategoryLoading(false);
     }
-  }, [fetchSecondaryCategories]);
+  }, [loadChildCategories]);
 
   useEffect(() => {
-    initializeCategoryData();
-  }, [initializeCategoryData]);
+    loadCategories();
+  }, [loadCategories]);
 
-  const onMainCategorySelect = (categoryId: number) => {
-    setSelectedMainCategoryId(categoryId);
-    fetchSecondaryCategories(categoryId);
-  };
+  const selectParentCategory = useCallback(
+    async (parentCategoryId: number) => {
+      setSelectedParentCategoryId(parentCategoryId);
+      await loadChildCategories(parentCategoryId);
+    },
+    [loadChildCategories],
+  );
 
-  const navigateToProductList = (subCategoryId: number) => {
-    router.push({
-      pathname: '/product/list',
-      params: { fid: selectedMainCategoryId, sid: subCategoryId },
-    });
-  };
+  const navigateToProductList = useCallback((childCategoryId: number) => {
+    router.push({ pathname: '/product/[id]', params: { id: childCategoryId } });
+  }, []);
+
+  const categoryStateView = useMemo(() => {
+    if (isCategoryLoading) {
+      return <Text>{t('common.loading')}</Text>;
+    }
+    if (categoryLoadError) {
+      return (
+        <>
+          <Text style={{ color: colors.error }}>{t('common.load_failed')}</Text>
+          <TouchableOpacity onPress={loadCategories} style={styles.retryButton}>
+            <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
+          </TouchableOpacity>
+        </>
+      );
+    }
+    return null;
+  }, [categoryLoadError, colors.error, isCategoryLoading, loadCategories, t]);
+
+  if (categoryStateView) {
+    return <View style={[styles.container, styles.center]}>{categoryStateView}</View>;
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.content}>
-        <ScrollView style={styles.leftAside} showsVerticalScrollIndicator={false}>
-          {primaryCategories.map((category) => (
-            <TouchableOpacity
-              key={category.id}
-              style={[
-                styles.fItem,
-                selectedMainCategoryId === category.id && { backgroundColor: colors.background },
-              ]}
-              onPress={() => onMainCategorySelect(category.id)}
-            >
-              {selectedMainCategoryId === category.id && (
-                <View style={[styles.activeLine, { backgroundColor: colors.primary }]} />
-              )}
-              <Text
+        <ScrollView style={styles.parentCategoryPanel} showsVerticalScrollIndicator={false}>
+          {parentCategoryList.map((parentCategory) => {
+            const isSelectedParentCategory = selectedParentCategoryId === parentCategory.id;
+            return (
+              <TouchableOpacity
+                key={parentCategory.id}
                 style={[
-                  styles.fItemText,
-                  { color: selectedMainCategoryId === category.id ? colors.primary : colors.fontColorBase },
+                  styles.parentCategoryRow,
+                  isSelectedParentCategory && { backgroundColor: colors.background },
                 ]}
-              >
-                {category.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                onPress={() => selectParentCategory(parentCategory.id)}>
+                {isSelectedParentCategory && <View style={[styles.selectedLine, { backgroundColor: colors.primary }]} />}
+                <Text
+                  style={[
+                    styles.parentCategoryText,
+                    { color: isSelectedParentCategory ? colors.primary : colors.fontColorBase },
+                  ]}>
+                  {parentCategory.name}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
 
-        <ScrollView style={styles.rightAside} showsVerticalScrollIndicator={false}>
-          <View style={styles.sList}>
-            {secondaryCategories.map((subCategory) => (
+        <ScrollView style={styles.childCategoryPanel} showsVerticalScrollIndicator={false}>
+          <View style={styles.childCategoryGrid}>
+            {childCategoryList.map((childCategory) => (
               <TouchableOpacity
-                key={subCategory.id}
-                style={styles.sItem}
-                onPress={() => navigateToProductList(subCategory.id)}
-              >
+                key={childCategory.id}
+                style={styles.childCategoryCard}
+                onPress={() => navigateToProductList(childCategory.id)}>
                 <Image
-                  source={{ uri: subCategory.icon || 'https://via.placeholder.com/140' }}
-                  style={styles.sImage}
+                  source={{ uri: childCategory.icon || 'https://via.placeholder.com/140' }}
+                  style={styles.childCategoryImage}
                 />
-                <Text style={[styles.sItemText, { color: colors.fontColorBase }]}>
-                  {subCategory.name}
-                </Text>
+                <Text style={[styles.childCategoryText, { color: colors.fontColorBase }]}>{childCategory.name}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -127,22 +143,37 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  center: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  retryButton: {
+    marginTop: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: '#fa436a',
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
   content: {
     flex: 1,
     flexDirection: 'row',
   },
-  leftAside: {
+  parentCategoryPanel: {
     width: 100,
     backgroundColor: '#fff',
   },
-  fItem: {
+  parentCategoryRow: {
     width: '100%',
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
   },
-  activeLine: {
+  selectedLine: {
     position: 'absolute',
     left: 0,
     top: '30%',
@@ -150,14 +181,14 @@ const styles = StyleSheet.create({
     width: 4,
     borderRadius: 2,
   },
-  fItemText: {
+  parentCategoryText: {
     fontSize: 14,
   },
-  rightAside: {
+  childCategoryPanel: {
     flex: 1,
     paddingLeft: 10,
   },
-  sList: {
+  childCategoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     backgroundColor: '#fff',
@@ -165,17 +196,17 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
   },
-  sItem: {
+  childCategoryCard: {
     width: '33.33%',
     alignItems: 'center',
     paddingBottom: 20,
   },
-  sImage: {
+  childCategoryImage: {
     width: 70,
     height: 70,
     marginBottom: 8,
   },
-  sItemText: {
+  childCategoryText: {
     fontSize: 12,
   },
 });

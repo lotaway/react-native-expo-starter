@@ -1,30 +1,22 @@
 import MallClient from './client';
-
-export interface MallHomeContent {
-  advertiseList: any[];
-  brandList: any[];
-  homeFlashPromotion: any;
-  newProductList: any[];
-  hotProductList: any[];
-  subjectList: any[];
-}
+import { MallHomeContent, MallProductCategory, MallProductSummary } from '@/types/mall';
 
 export function fetchMallHomeContent() {
   return MallClient.get<MallHomeContent>('/home/content');
 }
 
 export function fetchRecommendMallProductList(params: { pageSize: number; pageNum: number }) {
-  return MallClient.get('/home/recommendProductList', { params });
+  return MallClient.get<MallProductSummary[]>('/home/recommendProductList', { params });
 }
 
 export function fetchProductCategoryList(parentId: number) {
-  return MallClient.get(`/home/productCateList/${parentId}`);
+  return MallClient.get<MallProductCategory[]>(`/home/productCateList/${parentId}`);
 }
 
 export function fetchNewMallProductList(params: { pageSize: number; pageNum: number }) {
-  return MallClient.get('/home/newProductList', { params });
+  return MallClient.get<MallProductSummary[]>('/home/newProductList', { params });
 }
 
 export function fetchHotMallProductList(params: { pageSize: number; pageNum: number }) {
-  return MallClient.get('/home/hotProductList', { params });
+  return MallClient.get<MallProductSummary[]>('/home/hotProductList', { params });
 }
