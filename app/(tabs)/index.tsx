@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dimensions,
@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { RemoteResourceState } from '@/components/RemoteResourceState';
 import { fetchMallHomeContent } from '@/api/home';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -62,25 +63,15 @@ export default function HomeScreen() {
     router.push({ pathname: '/product/[id]', params: { id: productId } });
   }, []);
 
-  const homeStateView = useMemo(() => {
-    if (isHomeContentLoading) {
-      return <Text>{t('common.loading')}</Text>;
-    }
-    if (homeContentLoadError) {
-      return (
-        <>
-          <Text style={{ color: colors.error }}>{t('common.load_failed')}</Text>
-          <TouchableOpacity onPress={loadHomeContent} style={styles.retryButton}>
-            <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
-          </TouchableOpacity>
-        </>
-      );
-    }
-    return null;
-  }, [colors.error, homeContentLoadError, isHomeContentLoading, loadHomeContent, t]);
-
-  if (homeStateView) {
-    return <View style={[styles.container, styles.center]}>{homeStateView}</View>;
+  if (isHomeContentLoading || homeContentLoadError) {
+    return (
+      <RemoteResourceState
+        isLoading={isHomeContentLoading}
+        hasError={Boolean(homeContentLoadError)}
+        errorColor={colors.error}
+        onRetry={loadHomeContent}
+      />
+    );
   }
 
   if (!homeContent) {
@@ -281,18 +272,6 @@ const styles = StyleSheet.create({
   center: {
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  retryButton: {
-    marginTop: 12,
-    paddingHorizontal: 18,
-    paddingVertical: 8,
-    borderRadius: 18,
-    backgroundColor: '#fa436a',
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
   },
   header: {
     flexDirection: 'row',

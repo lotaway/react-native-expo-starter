@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   Image,
   SafeAreaView,
@@ -11,6 +10,7 @@ import {
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { fetchProductList } from '@/api/product';
+import { RemoteResourceState } from '@/components/RemoteResourceState';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { MallProductSummary } from '@/types/mall';
@@ -18,7 +18,6 @@ import { MallProductSummary } from '@/types/mall';
 const defaultPageSize = 20;
 
 export default function ProductListScreen() {
-  const { t } = useTranslation();
   const { sid } = useLocalSearchParams<{ sid?: string }>();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme] as typeof Colors.light;
@@ -56,22 +55,14 @@ export default function ProductListScreen() {
     loadProductList();
   }, [loadProductList]);
 
-  if (isProductListLoading) {
+  if (isProductListLoading || productListLoadError) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <Text>{t('common.loading')}</Text>
-      </View>
-    );
-  }
-
-  if (productListLoadError) {
-    return (
-      <View style={[styles.container, styles.center]}>
-        <Text style={{ color: colors.error }}>{t('common.load_failed')}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={loadProductList}>
-          <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
-        </TouchableOpacity>
-      </View>
+      <RemoteResourceState
+        isLoading={isProductListLoading}
+        hasError={Boolean(productListLoadError)}
+        errorColor={colors.error}
+        onRetry={loadProductList}
+      />
     );
   }
 
@@ -101,21 +92,6 @@ export default function ProductListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  center: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  retryButton: {
-    marginTop: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-    backgroundColor: '#fa436a',
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontWeight: '600',
   },
   grid: {
     padding: 12,

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Image,
   SafeAreaView,
@@ -8,9 +8,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { fetchProductCategoryList } from '@/api/home';
+import { RemoteResourceState } from '@/components/RemoteResourceState';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { MallProductCategory } from '@/types/mall';
@@ -18,7 +18,6 @@ import { MallProductCategory } from '@/types/mall';
 const rootCategoryId = 0;
 
 export default function CategoryScreen() {
-  const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme] as typeof Colors.light;
 
@@ -70,25 +69,15 @@ export default function CategoryScreen() {
     router.push({ pathname: '/product/[id]', params: { id: childCategoryId } });
   }, []);
 
-  const categoryStateView = useMemo(() => {
-    if (isCategoryLoading) {
-      return <Text>{t('common.loading')}</Text>;
-    }
-    if (categoryLoadError) {
-      return (
-        <>
-          <Text style={{ color: colors.error }}>{t('common.load_failed')}</Text>
-          <TouchableOpacity onPress={loadCategories} style={styles.retryButton}>
-            <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
-          </TouchableOpacity>
-        </>
-      );
-    }
-    return null;
-  }, [categoryLoadError, colors.error, isCategoryLoading, loadCategories, t]);
-
-  if (categoryStateView) {
-    return <View style={[styles.container, styles.center]}>{categoryStateView}</View>;
+  if (isCategoryLoading || categoryLoadError) {
+    return (
+      <RemoteResourceState
+        isLoading={isCategoryLoading}
+        hasError={Boolean(categoryLoadError)}
+        errorColor={colors.error}
+        onRetry={loadCategories}
+      />
+    );
   }
 
   return (
@@ -142,21 +131,6 @@ export default function CategoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  center: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  retryButton: {
-    marginTop: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-    backgroundColor: '#fa436a',
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontWeight: '600',
   },
   content: {
     flex: 1,

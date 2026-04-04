@@ -16,6 +16,7 @@ import { Stack, router, useLocalSearchParams } from 'expo-router';
 import RenderHTML from 'react-native-render-html';
 import { fetchProductDetail } from '@/api/product';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { RemoteResourceState } from '@/components/RemoteResourceState';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { MallProduct } from '@/types/mall';
@@ -76,23 +77,19 @@ export default function ProductDetailScreen() {
     loadProductDetail(productId);
   }, [id, loadProductDetail]);
 
-  if (isProductDetailLoading) {
+  if (isProductDetailLoading || productDetailLoadError) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <Text>{t('common.loading')}</Text>
-      </View>
+      <RemoteResourceState
+        isLoading={isProductDetailLoading}
+        hasError={Boolean(productDetailLoadError)}
+        errorColor={colors.error}
+        onRetry={() => loadProductDetail(Number(id ?? 0))}
+      />
     );
   }
 
-  if (productDetailLoadError || !productDetail) {
-    return (
-      <View style={[styles.container, styles.center]}>
-        <Text style={{ color: colors.error }}>{t('common.load_failed')}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={() => loadProductDetail(Number(id ?? 0))}>
-          <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
-        </TouchableOpacity>
-      </View>
-    );
+  if (!productDetail) {
+    return <View style={styles.container} />;
   }
 
   return (
@@ -222,17 +219,6 @@ const styles = StyleSheet.create({
   center: {
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  retryButton: {
-    marginTop: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-    backgroundColor: '#fa436a',
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontWeight: '600',
   },
   bannerContainer: {
     height: pageWidth,
