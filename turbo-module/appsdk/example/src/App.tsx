@@ -1,7 +1,7 @@
 import { Text, View, StyleSheet } from 'react-native';
-import { multiply } from 'react-native-appsdk';
+import Appsdk from 'react-native-appsdk';
 
-const result = multiply(3, 7);
+const result = Appsdk.multiply(3, 7);
 
 export default function App() {
   return (

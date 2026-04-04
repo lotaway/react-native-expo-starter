@@ -48,7 +48,7 @@ const handleSessionExpiration = () => {
       { text: '取消', style: 'cancel' },
       {
         text: '去登录',
-        onPress: () => router.push('/(auth)/login'),
+        onPress: () => router.push('/profile'),
       },
     ]
   );
